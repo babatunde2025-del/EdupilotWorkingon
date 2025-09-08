@@ -1,0 +1,87 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #667eea;">💼 Manage Deals</h1>
+        <p style="color: rgba(255, 255, 255, 0.8);">Monitor and manage all deals on the platform</p>
+    </div>
+
+    <div class="card">
+        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <h2 style="font-size: 1.5rem; color: #667eea; margin: 0;">All Deals</h2>
+        </div>
+        
+        <% if (deals && deals.length > 0) { %>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Client</th>
+                            <th>Agent</th>
+                            <th>Deal Value</th>
+                            <th>Commission</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% deals.forEach(deal => { %>
+                            <tr>
+                                <td style="color: rgba(255, 255, 255, 0.9);"><%= deal.property.title %></td>
+                                <td style="color: rgba(255, 255, 255, 0.9);"><%= deal.client.fullName %></td>
+                                <td style="color: rgba(255, 255, 255, 0.9);"><%= deal.agent.fullName %></td>
+                                <td style="color: #51cf66; font-weight: 600;">₦<%= deal.dealValue.toLocaleString() %></td>
+                                <td>
+                                    <div style="color: #667eea; font-weight: 600;">₦<%= deal.commission.toLocaleString() %></div>
+                                    <% if (deal.commissionPaid) { %>
+                                        <span style="color: #51cf66; font-size: 0.8rem;">✓ Paid</span>
+                                    <% } else { %>
+                                        <span style="color: #ff6b6b; font-size: 0.8rem;">✗ Unpaid</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; <%= deal.status === 'closed' ? 'background: rgba(81, 207, 102, 0.2); color: #51cf66;' : deal.status === 'pending' ? 'background: rgba(255, 212, 59, 0.2); color: #ffd43b;' : 'background: rgba(255, 107, 107, 0.2); color: #ff6b6b;' %>">
+                                        <%= deal.status.charAt(0).toUpperCase() + deal.status.slice(1) %>
+                                    </span>
+                                </td>
+                                <td style="color: rgba(255, 255, 255, 0.6);"><%= new Date(deal.createdAt).toLocaleDateString() %></td>
+                                <td>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <% if (deal.status === 'pending') { %>
+                                            <form action="/admin/close-deal/<%= deal._id %>" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to close this deal?')">Close</button>
+                                            </form>
+                                            <form action="/admin/flag-deal/<%= deal._id %>" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to flag this deal?')">Flag</button>
+                                            </form>
+                                        <% } else if (deal.status === 'closed') { %>
+                                            <span style="color: #51cf66; font-size: 0.9rem;">✅ Completed</span>
+                                        <% } else { %>
+                                            <span style="color: #ff6b6b; font-size: 0.9rem;">🚩 Flagged</span>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div style="padding: 3rem; text-center;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">💼</div>
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">No deals found</p>
+                    <p>Deals will appear here when clients and agents interact</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="/admin/dashboard" class="btn btn-primary btn-lg">← Back to Dashboard</a>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

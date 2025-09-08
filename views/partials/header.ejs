@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'HomLet - Premium Property Platform' %></title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+    
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="HomLet - Connect with verified real estate agents and find your perfect property">
+    <meta name="keywords" content="real estate, property, agents, houses, rent, buy">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    
+    
+    <!-- Paystack for payments -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+<body>
+    <!-- Preloader -->
+    <div class="preloader" id="preloader">
+        <div class="world-map">🌍</div>
+        <div class="loading-text">Loading HomLet...</div>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <!-- <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button> -->
+
+    <!-- Navigation Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="/" class="logo">🏠 HomLet</a>
+            </div>
+            
+            <ul class="nav-links">
+                <% if (typeof user !== 'undefined' && user) { %>
+                    <!-- Authenticated User Navigation -->
+                    <li class="nav-user-info">
+                        <span class="welcome-text">Welcome, <%= user.fullName %></span>
+                    </li>
+                    
+                    <% if (user.role === 'client') { %>
+                        <li><a href="/client/dashboard" class="nav-link">Dashboard</a></li>
+                        <li><a href="/client/payments" class="nav-link">Payments</a></li>
+                    <% } else if (user.role === 'agent') { %>
+                        <li><a href="/agent/dashboard" class="nav-link">Dashboard</a></li>
+                        <li><a href="/agent/upload" class="nav-link">Upload Property</a></li>
+                    <% } else if (user.role === 'admin') { %>
+                        <li><a href="/admin/dashboard" class="nav-link">Admin Panel</a></li>
+                        <li><a href="/admin/users" class="nav-link">Manage Users</a></li>
+                    <% } %>
+                    
+                    <li><a href="/houses" class="nav-link">Browse Properties</a></li>
+                    <li>
+                        <form action="/auth/logout" method="POST" class="logout-form">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirmLogout()">Logout</button>
+                        </form>
+                    </li>
+                <% } else { %>
+                    <!-- Guest Navigation -->
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/houses" class="nav-link">Find Houses</a></li>
+                    <li><a href="/about" class="nav-link">About</a></li>
+                    <li><a href="/contact" class="nav-link">Contact</a></li>
+                    <li>
+                        <div style="position: relative; display: inline-block;">
+                            <button onclick="toggleLoginDropdown()" class="nav-link" style="background: none; border: none; cursor: pointer; color: rgba(255, 255, 255, 0.9);">
+                                Login ▼
+                            </button>
+                            <div id="loginDropdown" class="login-dropdown" style="display: none;">
+                                <a href="/auth/client-login">👤 Client Login</a>
+                                <a href="/auth/agent-login">🏢 Agent Login</a>
+                                <a href="/admin/login">👨‍💼 Admin Login</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="/auth/client-register" class="btn btn-primary btn-sm">Register</a></li>
+                <% } %>
+            </ul>
+            
+            <!-- Mobile menu toggle -->
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Flash Messages -->
+    <% if (typeof success_msg !== 'undefined' && success_msg && success_msg.length > 0) { %>
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <span class="alert-message"><%= success_msg %></span>
+            <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+    <% } %>
+
+    <% if (typeof error_msg !== 'undefined' && error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-error">
+            <span class="alert-icon">❌</span>
+            <span class="alert-message"><%= error_msg %></span>
+            <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+    <% } %>
+
+    <!-- Main Content Container -->
+    <main class="main-content">

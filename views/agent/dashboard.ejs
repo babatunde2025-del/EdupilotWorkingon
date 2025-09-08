@@ -1,0 +1,304 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #4f46e5;">🏢 Welcome back, <%= agent.fullName %>!</h1>
+        <p style="color: rgba(255, 255, 255, 0.8);">Manage your properties and track your performance</p>
+        
+        <% if (agent.isBlocked) { %>
+            <div style="margin-top: 1rem; background: rgba(255, 107, 107, 0.15); border: 1px solid rgba(255, 107, 107, 0.3); color: #ff6b6b; padding: 1rem; border-radius: 12px;">
+                <strong>⚠️ Account Blocked:</strong> Your account is blocked due to unpaid commissions. Please contact admin to resolve.
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-icon">🏠</span>
+            <span class="stat-number"><%= properties.length %></span>
+            <span class="stat-label">Properties Listed</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">💰</span>
+            <span class="stat-number"><%= agent.commission %>%</span>
+            <span class="stat-label">Commission Rate</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">⭐</span>
+            <span class="stat-number"><%= agent.rating > 0 ? agent.rating.toFixed(1) : 'N/A' %></span>
+            <span class="stat-label">Rating</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">📈</span>
+            <span class="stat-number"><%= agent.totalRatings %></span>
+            <span class="stat-label">Total Reviews</span>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card mb-4">
+        <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: #4f46e5;">⚡ Quick Actions</h2>
+        <div class="grid grid-4">
+            <% if (!agent.isBlocked) { %>
+                <a href="/agent/upload" class="btn btn-primary">📤 Upload New Property</a>
+            <% } %>
+            <a href="/houses" class="btn btn-success">🔍 View All Properties</a>
+            <a href="/about" class="btn btn-secondary">ℹ️ About HomLet</a>
+            <a href="/contact" class="btn btn-warning">📞 Contact Support</a>
+        </div>
+    </div>
+
+    <!-- Properties Section -->
+    <div class="card mb-4">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.5rem; color: #4f46e5; margin: 0;">🏠 Your Properties</h2>
+            <% if (!agent.isBlocked) { %>
+                <a href="/agent/upload" class="btn btn-primary btn-sm">+ Add Property</a>
+            <% } %>
+        </div>
+        
+        <% if (properties && properties.length > 0) { %>
+            <!-- Search Filter -->
+            <div class="search-filter-container">
+                <input type="text" id="propertySearch" placeholder="🔍 Search properties by title, location, or type..." class="search-input" onkeyup="filterProperties()">
+            </div>
+
+            <div class="table-container">
+                <table class="table" id="propertiesTable">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Location</th>
+                            <th>Price</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Views</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="propertiesTableBody">
+                        <% properties.forEach((property, index) => { %>
+                            <tr class="property-row" style="<%= index >= 5 ? 'display: none;' : '' %>">
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <img src="/uploads/properties/<%= property.images[0] %>" alt="<%= property.title %>" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 1rem;">
+                                        <div>
+                                            <p style="font-weight: 600; color: #ffffff; margin: 0;"><%= property.title %></p>
+                                            <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin: 0;"><%= property.description.substring(0, 50) %>...</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="color: rgba(255, 255, 255, 0.8);"><%= property.location.area %>, <%= property.location.state %></td>
+                                <td style="color: #51cf66; font-weight: 600;">₦<%= property.price.toLocaleString() %></td>
+                                <td style="color: rgba(255, 255, 255, 0.8);"><%= property.propertyType === 'rent' ? 'For Rent' : 'For Sale' %></td>
+                                <td>
+                                    <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; <%= property.status === 'active' ? 'background: rgba(81, 207, 102, 0.2); color: #51cf66;' : property.status === 'sold' ? 'background: rgba(255, 107, 107, 0.2); color: #ff6b6b;' : 'background: rgba(255, 212, 59, 0.2); color: #ffd43b;' %>">
+                                        <%= property.status.charAt(0).toUpperCase() + property.status.slice(1) %>
+                                    </span>
+                                </td>
+                                <td style="color: #4f46e5; font-weight: 600;"><%= property.views %></td>
+                                <td>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <a href="/property/<%= property._id %>" class="btn btn-sm btn-primary">View</a>
+                                        <a href="/agent/edit/<%= property._id %>" class="btn btn-sm btn-warning">Edit</a>
+                                        <form action="/agent/delete/<%= property._id %>?_method=DELETE" method="POST" style="display: inline;">
+                                            <button type="submit" onclick="return confirm('Are you sure you want to delete this property?')" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (properties.length > 5) { %>
+                <div class="pagination-container">
+                    <button class="pagination-btn" onclick="previousPage()" id="prevBtn">← Previous</button>
+                    <span class="pagination-info" id="pageInfo">Showing 1-5 of <%= properties.length %></span>
+                    <button class="pagination-btn" onclick="nextPage()" id="nextBtn">Next →</button>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div style="text-align: center; padding: 3rem 0;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🏠</div>
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">No properties listed yet</p>
+                    <% if (!agent.isBlocked) { %>
+                        <a href="/agent/upload" class="btn btn-primary">Upload your first property</a>
+                    <% } %>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Deals Section -->
+    <div class="card mb-4">
+        <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: #4f46e5;">💼 Recent Deals</h2>
+        
+        <% if (deals && deals.length > 0) { %>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Client</th>
+                            <th>Deal Value</th>
+                            <th>Commission</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% deals.slice(0, 5).forEach(deal => { %>
+                            <tr>
+                                <td style="color: rgba(255, 255, 255, 0.9);"><%= deal.property.title %></td>
+                                <td style="color: rgba(255, 255, 255, 0.9);"><%= deal.client.fullName %></td>
+                                <td style="color: #51cf66; font-weight: 600;">₦<%= deal.dealValue.toLocaleString() %></td>
+                                <td style="color: #4f46e5; font-weight: 600;">₦<%= deal.commission.toLocaleString() %></td>
+                                <td>
+                                    <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; <%= deal.status === 'closed' ? 'background: rgba(81, 207, 102, 0.2); color: #51cf66;' : deal.status === 'pending' ? 'background: rgba(255, 212, 59, 0.2); color: #ffd43b;' : 'background: rgba(255, 107, 107, 0.2); color: #ff6b6b;' %>">
+                                        <%= deal.status.charAt(0).toUpperCase() + deal.status.slice(1) %>
+                                    </span>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div style="text-align: center; padding: 3rem 0;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">💼</div>
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">No deals yet</p>
+                    <p>Deals will appear here when clients interact with your properties</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="card">
+        <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: #4f46e5;">⭐ Recent Reviews</h2>
+        
+        <% if (ratings && ratings.length > 0) { %>
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <% ratings.slice(0, 3).forEach(rating => { %>
+                    <div style="background: rgba(30, 30, 30, 0.8); padding: 1.5rem; border-radius: 12px; border-left: 4px solid #4f46e5; border: 1px solid rgba(255, 255, 255, 0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center;">
+                                <span style="font-weight: 600; color: #ffffff; margin-right: 1rem;"><%= rating.client.fullName %></span>
+                                <div style="display: flex; align-items: center;">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <span style="color: <%= i <= rating.rating ? '#ffd43b' : 'rgba(255, 255, 255, 0.3)' %>; font-size: 1.2rem;">★</span>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <span style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;"><%= new Date(rating.createdAt).toLocaleDateString() %></span>
+                        </div>
+                        <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 0.5rem;"><%= rating.comment %></p>
+                        <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">Property: <%= rating.property.title %></p>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div style="text-align: center; padding: 3rem 0;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">⭐</div>
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">No reviews yet</p>
+                    <p>Reviews from clients will appear here</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+let currentPage = 1;
+const rowsPerPage = 5;
+let filteredRows = [];
+
+function filterProperties() {
+    const searchTerm = document.getElementById('propertySearch').value.toLowerCase();
+    const rows = document.querySelectorAll('.property-row');
+    filteredRows = [];
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            filteredRows.push(row);
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Reset pagination
+    currentPage = 1;
+    paginateRows();
+}
+
+function paginateRows() {
+    const rows = filteredRows.length > 0 ? filteredRows : document.querySelectorAll('.property-row');
+    const totalRows = rows.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    
+    // Hide all rows first
+    rows.forEach(row => row.style.display = 'none');
+    
+    // Show current page rows
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
+    
+    for (let i = startIndex; i < endIndex; i++) {
+        if (rows[i]) {
+            rows[i].style.display = '';
+        }
+    }
+    
+    // Update pagination info
+    const pageInfo = document.getElementById('pageInfo');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (pageInfo) {
+        pageInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${totalRows}`;
+    }
+    
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+    }
+    
+    if (nextBtn) {
+        nextBtn.disabled = currentPage === totalPages;
+    }
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        paginateRows();
+    }
+}
+
+function nextPage() {
+    const rows = filteredRows.length > 0 ? filteredRows : document.querySelectorAll('.property-row');
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+    
+    if (currentPage < totalPages) {
+        currentPage++;
+        paginateRows();
+    }
+}
+
+// Initialize pagination on page load
+document.addEventListener('DOMContentLoaded', function() {
+    paginateRows();
+});
+</script>
+
+<%- include('../partials/footer') %>

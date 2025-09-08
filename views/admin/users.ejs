@@ -1,0 +1,179 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #667eea;">Manage Users</h1>
+        <p style="color: rgba(255, 255, 255, 0.8);">View and manage all registered clients and agents</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span style="font-size: 2rem; margin-bottom: 1rem; display: block;">👥</span>
+            <span class="stat-number"><%= typeof clients !== 'undefined' ? clients.length : 0 %></span>
+            <span class="stat-label">Total Clients</span>
+        </div>
+
+        <div class="stat-card">
+            <span style="font-size: 2rem; margin-bottom: 1rem; display: block;">🏢</span>
+            <span class="stat-number"><%= typeof agents !== 'undefined' ? agents.length : 0 %></span>
+            <span class="stat-label">Total Agents</span>
+        </div>
+
+        <div class="stat-card">
+            <span style="font-size: 2rem; margin-bottom: 1rem; display: block;">🚫</span>
+            <span class="stat-number"><%= typeof agents !== 'undefined' ? agents.filter(agent => agent.isBlocked).length : 0 %></span>
+            <span class="stat-label">Blocked Agents</span>
+        </div>
+
+        <div class="stat-card">
+            <span style="font-size: 2rem; margin-bottom: 1rem; display: block;">💰</span>
+            <span class="stat-number">₦<%= typeof clients !== 'undefined' ? clients.reduce((sum, client) => sum + client.paymentHistory.reduce((pSum, payment) => pSum + payment.amount, 0), 0).toLocaleString() : 0 %></span>
+            <span class="stat-label">Total Revenue</span>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card mb-4">
+        <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: #667eea;">Quick Actions</h2>
+        <div class="grid grid-4">
+            <a href="/admin/clients" class="btn btn-primary">View Clients</a>
+            <a href="/admin/agents" class="btn btn-success">View Agents</a>
+            <a href="/admin/properties" class="btn btn-secondary">View Properties</a>
+            <a href="/admin/deals" class="btn btn-danger">View Deals</a>
+        </div>
+    </div>
+
+    <!-- Clients Section -->
+    <div class="table-container mb-4">
+        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <h2 style="font-size: 1.5rem; color: #667eea; margin: 0;">Recent Clients</h2>
+        </div>
+        
+        <% if (typeof clients !== 'undefined' && clients && clients.length > 0) { %>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Unlocked Agents</th>
+                        <th>Total Spent</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% clients.slice(0, 10).forEach(client => { %>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center;">
+                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; margin-right: 1rem; color: white; font-weight: bold;">
+                                        <%= client.fullName.charAt(0) %>
+                                    </div>
+                                    <div>
+                                        <p style="font-weight: 600; color: #ffffff; margin: 0;"><%= client.fullName %></p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color: rgba(255, 255, 255, 0.8);"><%= client.email %></td>
+                            <td style="color: rgba(255, 255, 255, 0.8);"><%= client.phone %></td>
+                            <td style="color: #51cf66; font-weight: 600;"><%= client.unlockedAgents.length %></td>
+                            <td style="color: #51cf66; font-weight: 600;">₦<%= client.paymentHistory.reduce((sum, payment) => sum + payment.amount, 0).toLocaleString() %></td>
+                            <td style="color: rgba(255, 255, 255, 0.6);"><%= new Date(client.createdAt).toLocaleDateString() %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <div style="padding: 3rem; text-center;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">No clients found</p>
+                    <p>New clients will appear here when they register</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Agents Section -->
+    <div class="table-container">
+        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <h2 style="font-size: 1.5rem; color: #667eea; margin: 0;">Recent Agents</h2>
+        </div>
+        
+        <% if (typeof agents !== 'undefined' && agents && agents.length > 0) { %>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Agent</th>
+                        <th>Contact</th>
+                        <th>Commission</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% agents.slice(0, 10).forEach(agent => { %>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center;">
+                                    <% if (agent.profilePicture) { %>
+                                        <img src="/uploads/profiles/<%= agent.profilePicture %>" alt="<%= agent.fullName %>" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 1rem;">
+                                    <% } else { %>
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, #51cf66, #40c057); display: flex; align-items: center; justify-content: center; margin-right: 1rem; color: white; font-weight: bold;">
+                                            <%= agent.fullName.charAt(0) %>
+                                        </div>
+                                    <% } %>
+                                    <div>
+                                        <p style="font-weight: 600; color: #ffffff; margin: 0;"><%= agent.fullName %></p>
+                                        <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin: 0;"><%= agent.email %></p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color: rgba(255, 255, 255, 0.8);"><%= agent.phone %></td>
+                            <td style="color: #667eea; font-weight: 600;"><%= agent.commission %>%</td>
+                            <td>
+                                <% if (agent.rating > 0) { %>
+                                    <div style="display: flex; align-items: center;">
+                                        <span style="color: #ffd43b;">★</span>
+                                        <span style="margin-left: 0.25rem; color: rgba(255, 255, 255, 0.8);"><%= agent.rating.toFixed(1) %> (<%= agent.totalRatings %>)</span>
+                                    </div>
+                                <% } else { %>
+                                    <span style="color: rgba(255, 255, 255, 0.5);">No ratings</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; <%= agent.isBlocked ? 'background: rgba(255, 107, 107, 0.2); color: #ff6b6b;' : 'background: rgba(81, 207, 102, 0.2); color: #51cf66;' %>">
+                                    <%= agent.isBlocked ? 'Blocked' : 'Active' %>
+                                </span>
+                            </td>
+                            <td style="color: rgba(255, 255, 255, 0.6);"><%= new Date(agent.createdAt).toLocaleDateString() %></td>
+                            <td>
+                                <form action="/admin/toggle-agent/<%= agent._id %>" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm <%= agent.isBlocked ? 'btn-success' : 'btn-danger' %>" onclick="return confirm('Are you sure you want to <%= agent.isBlocked ? 'unblock' : 'block' %> this agent?')">
+                                        <%= agent.isBlocked ? 'Unblock' : 'Block' %>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <div style="padding: 3rem; text-center;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">No agents found</p>
+                    <p>New agents will appear here when they register</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Back to Dashboard -->
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="/admin/dashboard" class="btn btn-primary btn-lg">← Back to Dashboard</a>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,105 @@
+<%- include('partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="margin-bottom: 3rem; text-align: center;">
+        <h1 style="font-size: 3rem; margin-bottom: 1rem; color: #667eea;">🏠 Browse Properties</h1>
+        <p style="color: rgba(255, 255, 255, 0.8); font-size: 1.2rem;">Discover your perfect home from our verified property listings</p>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card" style="margin-bottom: 3rem;">
+        <h3 style="font-size: 1.4rem; margin-bottom: 1.5rem; color: #667eea;">🔍 Filter Properties</h3>
+        <form method="GET" action="/houses" class="grid grid-5" style="gap: 1.5rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">State</label>
+                <input type="text" name="state" value="<%= typeof filters !== 'undefined' && filters.state ? filters.state : '' %>" placeholder="Enter state" class="form-input">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Area</label>
+                <input type="text" name="area" value="<%= typeof filters !== 'undefined' && filters.area ? filters.area : '' %>" placeholder="Enter area" class="form-input">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Min Price (₦)</label>
+                <input type="number" name="minPrice" value="<%= typeof filters !== 'undefined' && filters.minPrice ? filters.minPrice : '' %>" placeholder="Min price" class="form-input">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Max Price (₦)</label>
+                <input type="number" name="maxPrice" value="<%= typeof filters !== 'undefined' && filters.maxPrice ? filters.maxPrice : '' %>" placeholder="Max price" class="form-input">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Type</label>
+                <select name="type" class="form-input">
+                    <option value="">All Types</option>
+                    <option value="rent" <%= typeof filters !== 'undefined' && filters.type === 'rent' ? 'selected' : '' %>>For Rent</option>
+                    <option value="buy" <%= typeof filters !== 'undefined' && filters.type === 'buy' ? 'selected' : '' %>>For Sale</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; align-items: end; grid-column: 1 / -1;">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="/houses" class="btn btn-secondary">Clear Filters</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Properties Grid -->
+    <div class="grid grid-3">
+        <% if (typeof properties !== 'undefined' && properties && properties.length > 0) { %>
+            <% properties.forEach(property => { %>
+                <div class="property-card">
+                    <div class="property-image-container">
+                        <img src="/uploads/properties/<%= property.images[0] %>" alt="<%= property.title %>">
+                        <div class="property-badge">
+                            <%= property.propertyType === 'rent' ? 'For Rent' : 'For Sale' %>
+                        </div>
+                        <div class="property-views">
+                            👁️ <%= property.views %> views
+                        </div>
+                    </div>
+                    
+                    <div class="property-card-content">
+                        <h3 class="property-title"><%= property.title %></h3>
+                        <p class="property-location">📍 <%= property.location.area %>, <%= property.location.state %></p>
+                        <p class="property-price">₦<%= property.price.toLocaleString() %></p>
+                        <p class="property-description"><%= property.description.substring(0, 100) %>...</p>
+                        
+                        <div class="property-meta">
+                            <div class="property-agent">
+                                <span>By: <%= property.agent.fullName %></span>
+                            </div>
+                            <div class="property-date">
+                                <%= new Date(property.createdAt).toLocaleDateString() %>
+                            </div>
+                        </div>
+                        
+                        <a href="/property/<%= property._id %>" class="btn btn-primary w-full">View Details</a>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 0;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🏠</div>
+                    <p style="font-size: 1.5rem; margin-bottom: 1rem;">No properties found matching your criteria</p>
+                    <p>Try adjusting your filters or <a href="/houses" style="color: #667eea;">browse all properties</a></p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Call to Action for Agents -->
+    <div class="card text-center" style="margin-top: 4rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));">
+        <h3 style="font-size: 2rem; margin-bottom: 1rem; color: #667eea;">🏢 Are you a Real Estate Agent?</h3>
+        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem; font-size: 1.1rem;">Join HomLet and start listing your properties to reach thousands of potential clients</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="/auth/agent-register" class="btn btn-primary btn-lg">🚀 Become an Agent</a>
+            <a href="/about" class="btn btn-secondary btn-lg">ℹ️ Learn More</a>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

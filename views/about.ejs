@@ -1,0 +1,77 @@
+<%- include('partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 3rem; margin-bottom: 1rem; color: #667eea;">About HomLet</h1>
+        <p style="font-size: 1.5rem; color: rgba(255, 255, 255, 0.8);">Connecting dreams with reality, one property at a time</p>
+    </div>
+
+    <div style="max-width: 800px; margin: 0 auto;">
+        <div class="card mb-4">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem; color: #667eea;">Our Mission</h2>
+            <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.8; font-size: 1.1rem;">
+                HomLet is revolutionizing the real estate industry by creating a transparent, efficient, and fair platform 
+                that connects property seekers with verified real estate agents. Our mission is to make property hunting 
+                stress-free while ensuring agents receive fair compensation for their expertise.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem; color: #667eea;">How It Works</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ffffff;">For Clients</h3>
+                    <ul style="color: rgba(255, 255, 255, 0.8); line-height: 1.8;">
+                        <li>• Browse thousands of properties for free</li>
+                        <li>• View detailed photos and videos</li>
+                        <li>• Pay only ₦2,000 to unlock agent contacts</li>
+                        <li>• Rate and review agents</li>
+                        <li>• Track your property search history</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ffffff;">For Agents</h3>
+                    <ul style="color: rgba(255, 255, 255, 0.8); line-height: 1.8;">
+                        <li>• List unlimited properties with photos/videos</li>
+                        <li>• Set your own commission rates</li>
+                        <li>• Get connected with serious buyers</li>
+                        <li>• Track your performance and ratings</li>
+                        <li>• Receive fair compensation for closed deals</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem; color: #667eea;">Why Choose HomLet?</h2>
+            <div class="grid grid-3">
+                <div class="text-center">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ffffff;">Secure & Safe</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8);">All transactions are secured with industry-standard encryption</p>
+                </div>
+                <div class="text-center">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ffffff;">Verified Agents</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8);">All agents are verified and rated by real clients</p>
+                </div>
+                <div class="text-center">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ffffff;">Fair Pricing</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8);">Transparent pricing with no hidden fees</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card text-center" style="background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem; color: #667eea;">Ready to Get Started?</h2>
+            <p style="font-size: 1.25rem; margin-bottom: 2rem; color: rgba(255, 255, 255, 0.8);">Join thousands of satisfied customers and agents on HomLet today</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="/auth/client-register" class="btn btn-primary btn-lg">Register as Client</a>
+                <a href="/auth/agent-register" class="btn btn-secondary btn-lg">Join as Agent</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,81 @@
+<%- include('partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 3rem; margin-bottom: 1rem; color: #667eea;">Contact Us</h1>
+        <p style="font-size: 1.5rem; color: rgba(255, 255, 255, 0.8);">Get in touch with our team</p>
+    </div>
+
+    <div style="max-width: 1000px; margin: 0 auto;">
+        <div class="grid grid-2">
+            <!-- Contact Form -->
+            <div class="card">
+                <h2 style="font-size: 2rem; margin-bottom: 1.5rem; color: #667eea;">Send us a Message</h2>
+                <form action="/contact" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="name" required class="form-input" placeholder="Your full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" required class="form-input" placeholder="your.email@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <input type="text" name="subject" required class="form-input" placeholder="What is this about?">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea name="message" rows="5" required class="form-input" placeholder="Tell us how we can help you..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-full">Send Message</button>
+                </form>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card">
+                <h2 style="font-size: 2rem; margin-bottom: 1.5rem; color: #667eea;">Contact Information</h2>
+                
+                <div style="display: flex; flex-direction: column; gap: 2rem;">
+                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                        <div style="font-size: 2rem;">📍</div>
+                        <div>
+                            <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; color: #ffffff;">Address</h3>
+                            <p style="color: rgba(255, 255, 255, 0.8);">123 HomLet Street<br>Victoria Island, Lagos<br>Nigeria</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                        <div style="font-size: 2rem;">📞</div>
+                        <div>
+                            <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; color: #ffffff;">Phone</h3>
+                            <p style="color: rgba(255, 255, 255, 0.8);">+234 800 HOMLET<br>+234 800 466 538</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                        <div style="font-size: 2rem;">📧</div>
+                        <div>
+                            <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; color: #ffffff;">Email</h3>
+                            <p style="color: rgba(255, 255, 255, 0.8);">support@homlet.com<br>info@homlet.com</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                        <div style="font-size: 2rem;">🕒</div>
+                        <div>
+                            <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; color: #ffffff;">Business Hours</h3>
+                            <p style="color: rgba(255, 255, 255, 0.8);">Monday - Friday: 9:00 AM - 6:00 PM<br>Saturday: 10:00 AM - 4:00 PM<br>Sunday: Closed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

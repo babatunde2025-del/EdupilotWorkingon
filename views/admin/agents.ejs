@@ -1,0 +1,192 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #4f46e5;">🏢 Manage Agents</h1>
+        <p style="color: rgba(255, 255, 255, 0.8);">View and manage all registered agents</p>
+    </div>
+
+    <div class="card">
+        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+            <h2 style="font-size: 1.5rem; color: #4f46e5; margin: 0;">All Agents</h2>
+        </div>
+        
+        <% if (agents && agents.length > 0) { %>
+            <!-- Search Filter - Fixed Width -->
+            <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                <div style="max-width: 400px;">
+                    <input type="text" id="agentSearch" placeholder="🔍 Search agents..." class="form-input" onkeyup="filterAgents()">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table" id="agentsTable">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Contact</th>
+                            <th>Commission</th>
+                            <th>Rating</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agentsTableBody">
+                        <% agents.forEach((agent, index) => { %>
+                            <tr class="agent-row" style="<%= index >= 5 ? 'display: none;' : '' %>">
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <% if (agent.profilePicture) { %>
+                                            <img src="/uploads/profiles/<%= agent.profilePicture %>" alt="<%= agent.fullName %>" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 1rem;">
+                                        <% } else { %>
+                                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, #51cf66, #40c057); display: flex; align-items: center; justify-content: center; margin-right: 1rem; color: white; font-weight: bold;">
+                                                <%= agent.fullName.charAt(0) %>
+                                            </div>
+                                        <% } %>
+                                        <div>
+                                            <p style="font-weight: 600; color: #ffffff; margin: 0;"><%= agent.fullName %></p>
+                                            <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin: 0;"><%= agent.email %></p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="color: rgba(255, 255, 255, 0.8);"><%= agent.phone %></td>
+                                <td style="color: #4f46e5; font-weight: 600;"><%= agent.commission %>%</td>
+                                <td>
+                                    <% if (agent.rating > 0) { %>
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="color: #ffd43b;">★</span>
+                                            <span style="margin-left: 0.25rem; color: rgba(255, 255, 255, 0.8);"><%= agent.rating.toFixed(1) %> (<%= agent.totalRatings %>)</span>
+                                        </div>
+                                    <% } else { %>
+                                        <span style="color: rgba(255, 255, 255, 0.5);">No ratings</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; <%= agent.isBlocked ? 'background: rgba(255, 107, 107, 0.2); color: #ff6b6b;' : 'background: rgba(81, 207, 102, 0.2); color: #51cf66;' %>">
+                                        <%= agent.isBlocked ? 'Blocked' : 'Active' %>
+                                    </span>
+                                </td>
+                                <td style="color: rgba(255, 255, 255, 0.6);"><%= new Date(agent.createdAt).toLocaleDateString() %></td>
+                                <td>
+                                    <form action="/admin/toggle-agent/<%= agent._id %>" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm <%= agent.isBlocked ? 'btn-success' : 'btn-danger' %>" onclick="return confirm('Are you sure you want to <%= agent.isBlocked ? 'unblock' : 'block' %> this agent?')">
+                                            <%= agent.isBlocked ? 'Unblock' : 'Block' %>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (agents.length > 5) { %>
+                <div class="pagination-container">
+                    <button class="pagination-btn" onclick="previousPage()" id="prevBtn">← Previous</button>
+                    <span class="pagination-info" id="pageInfo">Showing 1-5 of <%= agents.length %></span>
+                    <button class="pagination-btn" onclick="nextPage()" id="nextBtn">Next →</button>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div style="padding: 3rem; text-align: center;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🏢</div>
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">No agents found</p>
+                    <p>New agents will appear here when they register</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="/admin/dashboard" class="btn btn-primary btn-lg">← Back to Dashboard</a>
+    </div>
+</div>
+
+<script>
+let currentPage = 1;
+const rowsPerPage = 5;
+let filteredRows = [];
+
+function filterAgents() {
+    const searchTerm = document.getElementById('agentSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('.agent-row');
+    filteredRows = [];
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            filteredRows.push(row);
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Reset pagination
+    currentPage = 1;
+    paginateRows();
+}
+
+function paginateRows() {
+    const rows = filteredRows.length > 0 ? filteredRows : document.querySelectorAll('.agent-row');
+    const totalRows = rows.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    
+    // Hide all rows first
+    rows.forEach(row => row.style.display = 'none');
+    
+    // Show current page rows
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
+    
+    for (let i = startIndex; i < endIndex; i++) {
+        if (rows[i]) {
+            rows[i].style.display = '';
+        }
+    }
+    
+    // Update pagination info
+    const pageInfo = document.getElementById('pageInfo');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (pageInfo) {
+        pageInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${totalRows}`;
+    }
+    
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+    }
+    
+    if (nextBtn) {
+        nextBtn.disabled = currentPage === totalPages;
+    }
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        paginateRows();
+    }
+}
+
+function nextPage() {
+    const rows = filteredRows.length > 0 ? filteredRows : document.querySelectorAll('.agent-row');
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+    
+    if (currentPage < totalPages) {
+        currentPage++;
+        paginateRows();
+    }
+}
+
+// Initialize pagination on page load
+document.addEventListener('DOMContentLoaded', function() {
+    paginateRows();
+});
+</script>
+
+<%- include('../partials/footer') %>

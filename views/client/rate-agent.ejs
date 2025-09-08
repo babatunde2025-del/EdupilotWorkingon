@@ -1,0 +1,113 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Rate Agent</h1>
+        <p class="text-gray-600 mt-2">Share your experience with <%= agent.fullName %></p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <!-- Agent Info -->
+        <div class="flex items-center mb-6">
+            <% if (agent.profilePicture) { %>
+                <img src="/uploads/profiles/<%= agent.profilePicture %>" alt="<%= agent.fullName %>" class="w-16 h-16 rounded-full object-cover mr-4">
+            <% } else { %>
+                <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center mr-4">
+                    <span class="text-gray-600 text-xl">👤</span>
+                </div>
+            <% } %>
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900"><%= agent.fullName %></h2>
+                <p class="text-gray-600">📞 <%= agent.phone %></p>
+                <% if (agent.rating > 0) { %>
+                    <div class="flex items-center mt-1">
+                        <span class="text-yellow-500">★</span>
+                        <span class="text-gray-600 ml-1"><%= agent.rating.toFixed(1) %> (<%= agent.totalRatings %> reviews)</span>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Rating Form -->
+        <form action="/client/rate/<%= agent._id %>" method="POST" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Property</label>
+                <select name="propertyId" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Choose a property...</option>
+                    <% properties.forEach(property => { %>
+                        <option value="<%= property._id %>"><%= property.title %></option>
+                    <% }); %>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                <div class="flex space-x-2">
+                    <% for (let i = 1; i <= 5; i++) { %>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="rating" value="<%= i %>" class="sr-only" required>
+                            <span class="star text-3xl text-gray-300 hover:text-yellow-500 transition duration-200">★</span>
+                        </label>
+                    <% } %>
+                </div>
+                <p class="text-sm text-gray-500 mt-1">Click on stars to rate (1 = Poor, 5 = Excellent)</p>
+            </div>
+
+            <div>
+                <label for="comment" class="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
+                <textarea id="comment" name="comment" rows="4" required
+                          class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Share your experience with this agent..."></textarea>
+            </div>
+
+            <div class="flex justify-between">
+                <a href="/client/dashboard" class="bg-gray-300 text-gray-700 px-6 py-3 rounded-md hover:bg-gray-400 transition duration-300">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition duration-300">
+                    Submit Rating
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Star rating functionality
+const stars = document.querySelectorAll('.star');
+const radioButtons = document.querySelectorAll('input[name="rating"]');
+
+stars.forEach((star, index) => {
+    star.addEventListener('click', () => {
+        radioButtons[index].checked = true;
+        updateStarDisplay(index + 1);
+    });
+    
+    star.addEventListener('mouseenter', () => {
+        updateStarDisplay(index + 1);
+    });
+});
+
+document.querySelector('form').addEventListener('mouseleave', () => {
+    const checkedRating = document.querySelector('input[name="rating"]:checked');
+    if (checkedRating) {
+        updateStarDisplay(parseInt(checkedRating.value));
+    } else {
+        updateStarDisplay(0);
+    }
+});
+
+function updateStarDisplay(rating) {
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('text-yellow-500');
+            star.classList.remove('text-gray-300');
+        } else {
+            star.classList.add('text-gray-300');
+            star.classList.remove('text-yellow-500');
+        }
+    });
+}
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,166 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #4f46e5;">👥 Manage Clients</h1>
+        <p style="color: rgba(255, 255, 255, 0.8);">View and manage all registered clients</p>
+    </div>
+
+    <div class="card">
+        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+            <h2 style="font-size: 1.5rem; color: #4f46e5; margin: 0;">All Clients</h2>
+        </div>
+        
+        <% if (clients && clients.length > 0) { %>
+            <!-- Search Filter - Fixed Width -->
+            <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                <div style="max-width: 400px;">
+                    <input type="text" id="clientSearch" placeholder="🔍 Search clients..." class="form-input" onkeyup="filterClients()">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table" id="clientsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Unlocked Agents</th>
+                            <th>Total Spent</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                        <% clients.forEach((client, index) => { %>
+                            <tr class="client-row" style="<%= index >= 5 ? 'display: none;' : '' %>">
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; margin-right: 1rem; color: white; font-weight: bold;">
+                                            <%= client.fullName.charAt(0) %>
+                                        </div>
+                                        <div>
+                                            <p style="font-weight: 600; color: #ffffff; margin: 0;"><%= client.fullName %></p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="color: rgba(255, 255, 255, 0.8);"><%= client.email %></td>
+                                <td style="color: rgba(255, 255, 255, 0.8);"><%= client.phone %></td>
+                                <td style="color: #51cf66; font-weight: 600;"><%= client.unlockedAgents.length %></td>
+                                <td style="color: #51cf66; font-weight: 600;">₦<%= client.paymentHistory.reduce((sum, payment) => sum + payment.amount, 0).toLocaleString() %></td>
+                                <td style="color: rgba(255, 255, 255, 0.6);"><%= new Date(client.createdAt).toLocaleDateString() %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (clients.length > 5) { %>
+                <div class="pagination-container">
+                    <button class="pagination-btn" onclick="previousPage()" id="prevBtn">← Previous</button>
+                    <span class="pagination-info" id="pageInfo">Showing 1-5 of <%= clients.length %></span>
+                    <button class="pagination-btn" onclick="nextPage()" id="nextBtn">Next →</button>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div style="padding: 3rem; text-align: center;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">👥</div>
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">No clients found</p>
+                    <p>New clients will appear here when they register</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="/admin/dashboard" class="btn btn-primary btn-lg">← Back to Dashboard</a>
+    </div>
+</div>
+
+<script>
+let currentPage = 1;
+const rowsPerPage = 5;
+let filteredRows = [];
+
+function filterClients() {
+    const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('.client-row');
+    filteredRows = [];
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            filteredRows.push(row);
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Reset pagination
+    currentPage = 1;
+    paginateRows();
+}
+
+function paginateRows() {
+    const rows = filteredRows.length > 0 ? filteredRows : document.querySelectorAll('.client-row');
+    const totalRows = rows.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    
+    // Hide all rows first
+    rows.forEach(row => row.style.display = 'none');
+    
+    // Show current page rows
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
+    
+    for (let i = startIndex; i < endIndex; i++) {
+        if (rows[i]) {
+            rows[i].style.display = '';
+        }
+    }
+    
+    // Update pagination info
+    const pageInfo = document.getElementById('pageInfo');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (pageInfo) {
+        pageInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${totalRows}`;
+    }
+    
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+    }
+    
+    if (nextBtn) {
+        nextBtn.disabled = currentPage === totalPages;
+    }
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        paginateRows();
+    }
+}
+
+function nextPage() {
+    const rows = filteredRows.length > 0 ? filteredRows : document.querySelectorAll('.client-row');
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+    
+    if (currentPage < totalPages) {
+        currentPage++;
+        paginateRows();
+    }
+}
+
+// Initialize pagination on page load
+document.addEventListener('DOMContentLoaded', function() {
+    paginateRows();
+});
+</script>
+
+<%- include('../partials/footer') %>

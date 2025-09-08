@@ -1,0 +1,242 @@
+<%- include('../partials/header') %>
+
+<div class="property-details-container">
+    <div class="property-info-grid">
+        <!-- Property Images and Video -->
+        <div class="property-gallery">
+            <!-- Main Image -->
+            <div class="main-image-container">
+                <img id="mainImage" src="/uploads/properties/<%= property.images[0] %>" alt="<%= property.title %>" class="main-image">
+            </div>
+            
+            <!-- Thumbnail Images -->
+            <div class="thumbnail-grid">
+                <% property.images.forEach((image, index) => { %>
+                    <img src="/uploads/properties/<%= image %>" alt="Property Image <%= index + 1 %>" 
+                         class="thumbnail <%= index === 0 ? 'active' : '' %>"
+                         onclick="changeMainImage(this, '<%= image %>', <%= index %>)">
+                <% }); %>
+            </div>
+
+            <!-- Video (if available) -->
+            <% if (property.video) { %>
+                <div class="property-video-container">
+                    <h3 style="color: #667eea; margin-bottom: 1rem; font-size: 1.2rem;">🎥 Property Video</h3>
+                    <video controls class="property-video">
+                        <source src="/uploads/videos/<%= property.video %>" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            <% } %>
+
+            <!-- Description -->
+            <div class="card">
+                <h3 style="color: #667eea; margin-bottom: 1.5rem; font-size: 1.3rem;">📝 Property Description</h3>
+                <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.8; font-size: 1rem;"><%= property.description %></p>
+            </div>
+        </div>
+
+        <!-- Property Details and Agent Info -->
+        <div class="property-sidebar">
+            <!-- Property Info -->
+            <div class="card">
+                <div style="margin-bottom: 1.5rem;">
+                    <span class="property-badge">
+                        <%= property.propertyType === 'rent' ? 'For Rent' : 'For Sale' %>
+                    </span>
+                </div>
+                
+                <h1 style="font-size: 2rem; font-weight: 800; color: #ffffff; margin-bottom: 1rem; line-height: 1.3;"><%= property.title %></h1>
+                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; font-size: 1.1rem;">📍 <%= property.location.area %>, <%= property.location.state %></p>
+                <p class="property-price" style="font-size: 2.5rem; margin-bottom: 1.5rem;">₦<%= property.price.toLocaleString() %></p>
+                
+                <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px;">
+                    <div style="text-align: center;">
+                        <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">Views</div>
+                        <div style="color: #667eea; font-weight: 700; font-size: 1.2rem;">👁️ <%= property.views %></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">Listed</div>
+                        <div style="color: #667eea; font-weight: 700; font-size: 1.2rem;">📅 <%= new Date(property.createdAt).toLocaleDateString() %></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">Status</div>
+                        <div style="color: #51cf66; font-weight: 700; font-size: 1.2rem;">✅ <%= property.status.charAt(0).toUpperCase() + property.status.slice(1) %></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Info -->
+            <div class="agent-card">
+                <h3 style="color: #667eea; margin-bottom: 1.5rem; font-size: 1.3rem;">👨‍💼 Agent Information</h3>
+                
+                <div class="agent-info">
+                    <% if (property.agent.profilePicture) { %>
+                        <img src="/uploads/profiles/<%= property.agent.profilePicture %>" alt="<%= property.agent.fullName %>" class="agent-avatar">
+                    <% } else { %>
+                        <div class="agent-avatar-placeholder">
+                            <%= property.agent.fullName.charAt(0) %>
+                        </div>
+                    <% } %>
+                    <div class="agent-details">
+                        <h4><%= property.agent.fullName %></h4>
+                        <% if (property.agent.rating > 0) { %>
+                            <div class="agent-rating">
+                                <span class="rating-stars">★</span>
+                                <span><%= property.agent.rating.toFixed(1) %> (<%= property.agent.totalRatings %> reviews)</span>
+                            </div>
+                        <% } else { %>
+                            <div class="agent-rating">
+                                <span style="color: rgba(255, 255, 255, 0.5);">No ratings yet</span>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <% if (hasUnlocked) { %>
+                    <div class="contact-status contact-unlocked">
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">✅ Agent Contact Unlocked</p>
+                        <div class="agent-phone">📞 <%= property.agent.phone %></div>
+                    </div>
+                    
+                    <% if (user && user.role === 'client') { %>
+                        <a href="/client/rate/<%= property.agent._id %>" class="btn btn-warning w-full">
+                            ⭐ Rate This Agent
+                        </a>
+                    <% } %>
+                <% } else { %>
+                    <div class="contact-status contact-locked">
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">🔒 Agent Contact Hidden</p>
+                        <p style="margin: 0;">Pay ₦2,000 to unlock agent's phone number</p>
+                    </div>
+                    
+                    <% if (user && user.role === 'client') { %>
+                        <button onclick="unlockAgent('<%= property._id %>')" class="btn btn-success w-full">
+                            🔓 Unlock Agent Contact (₦2,000)
+                        </button>
+                    <% } else { %>
+                        <a href="/auth/client-register" class="btn btn-primary w-full">
+                            📝 Register to Contact Agent
+                        </a>
+                    <% } %>
+                <% } %>
+            </div>
+
+            <!-- Share Property -->
+            <div class="share-card">
+                <h3 style="color: #667eea; margin-bottom: 1.5rem; font-size: 1.3rem;">📤 Share Property</h3>
+                <div class="share-buttons">
+                    <button onclick="shareProperty('whatsapp')" class="share-btn share-whatsapp">
+                        📱 WhatsApp
+                    </button>
+                    <button onclick="shareProperty('copy')" class="share-btn share-copy">
+                        📋 Copy Link
+                    </button>
+                </div>
+            </div>
+
+            <!-- Back to Browse -->
+            <div class="card text-center">
+                <a href="/houses" class="btn btn-secondary w-full">← Back to Browse Properties</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeMainImage(thumbnail, imageName, index) {
+    document.getElementById('mainImage').src = '/uploads/properties/' + imageName;
+    
+    // Remove active class from all thumbnails
+    document.querySelectorAll('.thumbnail').forEach(img => {
+        img.classList.remove('active');
+    });
+    
+    // Add active class to clicked thumbnail
+    thumbnail.classList.add('active');
+}
+
+function shareProperty(type) {
+    const url = window.location.href;
+    const title = '<%= property.title %>';
+    const text = `Check out this amazing property: ${title} - ₦<%= property.price.toLocaleString() %>`;
+    
+    if (type === 'whatsapp') {
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+        window.open(whatsappUrl, '_blank');
+    } else if (type === 'copy') {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('✅ Link copied to clipboard!');
+            }).catch(() => {
+                fallbackCopyToClipboard(url);
+            });
+        } else {
+            fallbackCopyToClipboard(url);
+        }
+    }
+}
+
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        alert('✅ Link copied to clipboard!');
+    } catch (err) {
+        alert('❌ Failed to copy link. Please copy manually: ' + text);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+<% if (user && user.role === 'client' && !hasUnlocked) { %>
+function unlockAgent(propertyId) {
+    if (!confirm('Are you sure you want to unlock this agent\'s contact for ₦2,000?')) {
+        return;
+    }
+    
+    // Show loading state
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<span class="loading"></span> Processing...';
+    button.disabled = true;
+    
+    fetch('/payment/initialize', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ propertyId: propertyId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // For demo purposes, simulate successful payment
+            alert('🎉 Payment successful! Agent contact has been unlocked.');
+            window.location.reload();
+        } else {
+            alert('❌ Error: ' + (data.error || 'Payment initialization failed'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Payment initialization failed. Please try again.');
+    })
+    .finally(() => {
+        // Restore button state
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+<% } %>
+</script>
+
+<%- include('../partials/footer') %>

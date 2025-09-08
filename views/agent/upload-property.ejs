@@ -1,0 +1,414 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <!-- Centered Header -->
+    <div style="text-align: center; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #667eea;">📤 Upload New Property</h1>
+        <p style="color: rgba(255, 255, 255, 0.8); font-size: 1.1rem;">Add a new property to your listings and reach thousands of potential clients</p>
+    </div>
+
+    <!-- Centered Form Container -->
+    <div style="max-width: 900px; margin: 0 auto;">
+        <form action="/agent/upload" method="POST" enctype="multipart/form-data" class="upload-form">
+            <div class="form-section">
+                <h3 class="section-title">🏠 Property Information</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title" class="form-label">Property Title</label>
+                        <input type="text" id="title" name="title" required class="form-input" placeholder="e.g., Modern 3 Bedroom Apartment in Lekki">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price" class="form-label">Price (₦)</label>
+                        <input type="number" id="price" name="price" required class="form-input" placeholder="e.g., 2500000">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="state" class="form-label">State</label>
+                        <input type="text" id="state" name="state" required class="form-input" placeholder="e.g., Lagos" list="states-list">
+                        <datalist id="states-list">
+                            <option value="Lagos">
+                            <option value="Abuja">
+                            <option value="Rivers">
+                            <option value="Ogun">
+                            <option value="Kano">
+                            <option value="Kaduna">
+                            <option value="Oyo">
+                            <option value="Delta">
+                            <option value="Edo">
+                            <option value="Anambra">
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="area" class="form-label">Area</label>
+                        <input type="text" id="area" name="area" required class="form-input" placeholder="e.g., Victoria Island" list="areas-list">
+                        <datalist id="areas-list">
+                            <option value="Victoria Island">
+                            <option value="Lekki">
+                            <option value="Ikeja">
+                            <option value="Ikoyi">
+                            <option value="Surulere">
+                            <option value="Yaba">
+                            <option value="Gbagada">
+                            <option value="Ajah">
+                            <option value="Magodo">
+                            <option value="Alimosho">
+                            <option value="Igando">
+                            <option value="Egbeda">
+                            <option value="Isolo">
+                            <option value="Oshodi">
+                            <option value="Maryland">
+                        </datalist>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="propertyType" class="form-label">Property Type</label>
+                    <select id="propertyType" name="propertyType" required class="form-input">
+                        <option value="">Select Property Type</option>
+                        <option value="rent">For Rent</option>
+                        <option value="buy">For Sale</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="form-label">Property Description</label>
+                    <textarea id="description" name="description" rows="5" required class="form-input" placeholder="Describe the property features, amenities, location benefits, and any special characteristics that make this property attractive to potential clients..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">📸 Media Upload</h3>
+                
+                <div class="form-group">
+                    <label for="images" class="form-label">Property Images (Required: Exactly 5 Images)</label>
+                    <div class="file-upload-area" onclick="document.getElementById('images').click()">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">
+                            <strong>Click to upload 5 property images</strong>
+                            <p>Upload exactly 5 high-quality images (JPG, PNG, GIF - Max 5MB each)</p>
+                            <p>Show different angles: exterior, interior, kitchen, bedroom, bathroom</p>
+                        </div>
+                        <input type="file" id="images" name="images" multiple accept="image/*" required style="display: none;">
+                    </div>
+                    <div id="image-preview" class="image-preview"></div>
+                    <div id="image-error" class="upload-error" style="display: none;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="video" class="form-label">Property Video (Optional)</label>
+                    <div class="file-upload-area" onclick="document.getElementById('video').click()">
+                        <div class="upload-icon">🎥</div>
+                        <div class="upload-text">
+                            <strong>Click to upload property video</strong>
+                            <p>Upload a video showcasing the property (MP4, AVI, MOV - Max 50MB)</p>
+                            <p>A walkthrough video helps clients get a better feel of the property</p>
+                        </div>
+                        <input type="file" id="video" name="video" accept="video/*" style="display: none;">
+                    </div>
+                    <div id="video-preview" class="video-preview"></div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="/agent/dashboard" class="btn btn-secondary">← Cancel</a>
+                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">📤 Upload Property</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Image upload handling with validation
+document.getElementById('images').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const preview = document.getElementById('image-preview');
+    const errorDiv = document.getElementById('image-error');
+    
+    // Clear previous previews and errors
+    preview.innerHTML = '';
+    errorDiv.style.display = 'none';
+    
+    // Validate exactly 5 images
+    if (files.length !== 5) {
+        errorDiv.innerHTML = '❌ Please select exactly 5 images';
+        errorDiv.style.display = 'block';
+        e.target.value = '';
+        return;
+    }
+    
+    // Validate file sizes and types
+    let validFiles = true;
+    Array.from(files).forEach((file, index) => {
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            errorDiv.innerHTML = `❌ Image ${index + 1} is too large. Maximum size is 5MB`;
+            errorDiv.style.display = 'block';
+            validFiles = false;
+            return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+            errorDiv.innerHTML = `❌ File ${index + 1} is not a valid image`;
+            errorDiv.style.display = 'block';
+            validFiles = false;
+            return;
+        }
+    });
+    
+    if (!validFiles) {
+        e.target.value = '';
+        return;
+    }
+    
+    // Show previews
+    Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('div');
+            img.className = 'preview-item';
+            img.innerHTML = `
+                <img src="${e.target.result}" alt="Preview ${index + 1}">
+                <div class="preview-label">Image ${index + 1}</div>
+            `;
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+
+// Video upload handling
+document.getElementById('video').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('video-preview');
+    
+    if (file) {
+        // Validate file size (50MB limit)
+        if (file.size > 50 * 1024 * 1024) {
+            alert('❌ Video file is too large. Maximum size is 50MB');
+            e.target.value = '';
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('video/')) {
+            alert('❌ Please select a valid video file');
+            e.target.value = '';
+            return;
+        }
+        
+        const video = document.createElement('div');
+        video.className = 'preview-item';
+        video.innerHTML = `
+            <video controls style="width: 100%; height: 120px;">
+                <source src="${URL.createObjectURL(file)}" type="${file.type}">
+            </video>
+            <div class="preview-label">${file.name}</div>
+        `;
+        preview.innerHTML = '';
+        preview.appendChild(video);
+    }
+});
+
+// Form validation before submission
+document.querySelector('.upload-form').addEventListener('submit', function(e) {
+    const images = document.getElementById('images').files;
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (images.length !== 5) {
+        e.preventDefault();
+        alert('❌ Please upload exactly 5 images before submitting');
+        return false;
+    }
+    
+    // Show loading state
+    submitBtn.innerHTML = '<div class="loading-spinner"></div> Uploading...';
+    submitBtn.disabled = true;
+});
+
+// Auto-suggest for location fields
+document.getElementById('state').addEventListener('input', function() {
+    const value = this.value.toLowerCase();
+    if (value.includes('lag') || value.includes('eko')) {
+        this.value = 'Lagos';
+    } else if (value.includes('abu') || value.includes('fct')) {
+        this.value = 'Abuja';
+    }
+});
+
+document.getElementById('area').addEventListener('input', function() {
+    const value = this.value.toLowerCase();
+    const suggestions = {
+        'vi': 'Victoria Island',
+        'lekki': 'Lekki',
+        'ikeja': 'Ikeja',
+        'ikoyi': 'Ikoyi',
+        'surulere': 'Surulere',
+        'yaba': 'Yaba',
+        'gbagada': 'Gbagada',
+        'ajah': 'Ajah',
+        'magodo': 'Magodo',
+        'alimosho': 'Alimosho',
+        'igando': 'Igando',
+        'egbeda': 'Egbeda'
+    };
+    
+    for (const [key, suggestion] of Object.entries(suggestions)) {
+        if (value.includes(key)) {
+            this.value = suggestion;
+            break;
+        }
+    }
+});
+</script>
+
+<style>
+.upload-form {
+    background: rgba(20, 20, 30, 0.9);
+    border-radius: 20px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.form-section {
+    padding: 2.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    color: #667eea;
+    font-size: 1.4rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.file-upload-area {
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(30, 30, 40, 0.5);
+    margin-bottom: 1.5rem;
+}
+
+.file-upload-area:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+    transform: translateY(-2px);
+}
+
+.upload-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.upload-text strong {
+    color: #667eea;
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.upload-text p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+    line-height: 1.5;
+}
+
+.image-preview, .video-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.preview-item {
+    background: rgba(30, 30, 40, 0.8);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.preview-item:hover {
+    transform: scale(1.02);
+}
+
+.preview-item img,
+.preview-item video {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.preview-label {
+    padding: 0.75rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(20, 20, 20, 0.8);
+}
+
+.upload-error {
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    font-weight: 500;
+}
+
+.form-actions {
+    padding: 2.5rem;
+    background: rgba(15, 15, 25, 0.8);
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .file-upload-area {
+        padding: 2rem 1rem;
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+    }
+}
+</style>
+
+<%- include('../partials/footer') %>

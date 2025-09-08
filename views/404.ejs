@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+
+<div class="container" style="padding: 4rem 0; text-align: center;">
+    <div style="max-width: 600px; margin: 0 auto;">
+        <div style="font-size: 8rem; margin-bottom: 2rem; animation: pulse 2s infinite;">🏠</div>
+        <h1 style="font-size: 4rem; font-weight: bold; color: #667eea; margin-bottom: 1rem;">404</h1>
+        <h2 style="font-size: 2rem; font-weight: 600; color: #ffffff; margin-bottom: 1rem;">Page Not Found</h2>
+        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.6;">
+            The page you're looking for doesn't exist. It might have been moved, deleted, or you entered the wrong URL.
+        </p>
+        
+        <% if (typeof url !== 'undefined' && url) { %>
+            <div style="background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 2rem;">
+                <p style="color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">
+                    <strong>Requested URL:</strong> <code style="color: #ff6b6b;"><%= url %></code>
+                </p>
+            </div>
+        <% } %>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 0 auto;">
+            <a href="/" class="btn btn-primary btn-lg">🏠 Go to Homepage</a>
+            <a href="/houses" class="btn btn-success btn-lg">🔍 Browse Properties</a>
+            <button onclick="window.history.back()" class="btn btn-secondary">← Go Back</button>
+        </div>
+        
+        <!-- Helpful Links -->
+        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <h3 style="color: #667eea; margin-bottom: 1rem;">Popular Pages</h3>
+            <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+                <a href="/about" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">About Us</a>
+                <a href="/contact" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">Contact</a>
+                <a href="/auth/login" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">Login</a>
+                <a href="/auth/client-register" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">Register</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
