@@ -4,6 +4,7 @@ const { isAuthenticated, isClient } = require('../middleware/auth');
 const Property = require('../models/Property');
 const User = require('../models/User');
 const Rating = require('../models/Rating');
+const ContactRequest = require('../models/ContactRequest');
 
 // Client dashboard
 router.get('/dashboard', isAuthenticated, isClient, async (req, res) => {
@@ -21,8 +22,7 @@ router.get('/dashboard', isAuthenticated, isClient, async (req, res) => {
       .populate('agent', 'fullName phone')
       .sort({ createdAt: -1 });
 
-    const client = await User.findById(req.session.user._id)
-      .populate('unlockedAgents', 'fullName phone');
+    const client = await User.findById(req.session.user._id);
 
     res.render('client/dashboard', {
       title: 'Client Dashboard',
@@ -37,21 +37,81 @@ router.get('/dashboard', isAuthenticated, isClient, async (req, res) => {
   }
 });
 
-// Payment history
-router.get('/payments', isAuthenticated, isClient, async (req, res) => {
+// Contact agent
+router.post('/contact-agent', isAuthenticated, isClient, async (req, res) => {
   try {
-    const client = await User.findById(req.session.user._id)
-      .populate('paymentHistory.propertyId', 'title')
-      .populate('paymentHistory.agentId', 'fullName');
+    const { agentId, propertyId } = req.body;
+    
+    // Validate inputs
+    if (!agentId || !propertyId) {
+      return res.status(400).json({ error: 'Missing agent or property ID' });
+    }
 
-    res.render('client/payments', {
-      title: 'Payment History',
-      client
+    // Check if contact request already exists
+    const existingRequest = await ContactRequest.findOne({
+      client: req.session.user._id,
+      agent: agentId,
+      property: propertyId
     });
+
+    if (existingRequest) {
+      return res.status(400).json({ error: 'You have already contacted this agent for this property' });
+    }
+
+    // Get client, agent, and property details
+    const client = await User.findById(req.session.user._id);
+    const agent = await User.findById(agentId);
+    const property = await Property.findById(propertyId);
+
+    if (!client || !agent || !property) {
+      return res.status(404).json({ error: 'Client, agent, or property not found' });
+    }
+
+    // Create contact request
+    const contactRequest = new ContactRequest({
+      client: client._id,
+      agent: agent._id,
+      property: property._id
+    });
+
+    await contactRequest.save();
+
+    // Send email notifications
+    const emailTransporter = req.app.locals.emailTransporter;
+    
+    const emailContent = `
+      <h2>🏠 New Contact Request - HomLet</h2>
+      <p><strong>Client:</strong> ${client.fullName} (${client.email})</p>
+      <p><strong>Phone:</strong> ${client.phone}</p>
+      <p><strong>Agent:</strong> ${agent.fullName} (${agent.email})</p>
+      <p><strong>Property:</strong> ${property.title}</p>
+      <p><strong>Location:</strong> ${property.location.area}, ${property.location.state}</p>
+      <p><strong>Price:</strong> ₦${property.price.toLocaleString()}</p>
+      <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+      <hr>
+      <p>Please follow up on this contact request.</p>
+    `;
+
+    // Send to admin emails
+    const adminEmails = ['anthonyajibola65@gmail.com', 'Kennethuwota12@gmail.com'];
+    
+    for (const email of adminEmails) {
+      try {
+        await emailTransporter.sendMail({
+          from: process.env.EMAIL_USER || 'noreply@homlet.com',
+          to: email,
+          subject: `🏠 New Contact Request - ${client.fullName} contacted ${agent.fullName}`,
+          html: emailContent
+        });
+      } catch (emailError) {
+        console.error('Email sending error:', emailError);
+      }
+    }
+
+    res.json({ success: true, message: 'Contact request sent successfully' });
   } catch (error) {
-    console.error('Payment history error:', error);
-    req.flash('error_msg', 'Error loading payment history');
-    res.redirect('/client/dashboard');
+    console.error('Contact agent error:', error);
+    res.status(500).json({ error: 'Failed to send contact request' });
   }
 });
 

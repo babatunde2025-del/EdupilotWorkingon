@@ -31,16 +31,23 @@
             <span class="stat-number"><%= typeof stats !== 'undefined' ? stats.pendingDeals : 0 %></span>
             <span class="stat-label">Pending Deals</span>
         </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">📞</span>
+            <span class="stat-number"><%= typeof stats !== 'undefined' ? stats.contactRequestsCount : 0 %></span>
+            <span class="stat-label">Contact Requests</span>
+        </div>
     </div>
 
     <!-- Quick Actions -->
     <div class="card mb-4">
         <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: #667eea;">⚡ Quick Actions</h2>
-        <div class="grid grid-4">
+        <div class="grid grid-5">
             <a href="/admin/clients" class="btn btn-primary">👥 Manage Clients</a>
             <a href="/admin/agents" class="btn btn-success">🏢 Manage Agents</a>
             <a href="/admin/properties" class="btn btn-secondary">🏠 View Properties</a>
             <a href="/admin/deals" class="btn btn-danger">💼 View Deals</a>
+            <a href="/admin/contact-requests" class="btn btn-warning">📞 Contact Requests</a>
         </div>
     </div>
 

@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Property = require('../models/Property');
 const Deal = require('../models/Deal');
 const Rating = require('../models/Rating');
+const ContactRequest = require('../models/ContactRequest');
 
 // Admin login page
 router.get('/login', (req, res) => {
@@ -47,6 +48,7 @@ router.get('/dashboard', isAuthenticated, isAdmin, async (req, res) => {
     const agentsCount = await User.countDocuments({ role: 'agent' });
     const propertiesCount = await Property.countDocuments();
     const pendingDeals = await Deal.countDocuments({ status: 'pending' });
+    const contactRequestsCount = await ContactRequest.countDocuments({ status: 'pending' });
 
     const recentClients = await User.find({ role: 'client' })
       .sort({ createdAt: -1 })
@@ -67,7 +69,8 @@ router.get('/dashboard', isAuthenticated, isAdmin, async (req, res) => {
         clientsCount,
         agentsCount,
         propertiesCount,
-        pendingDeals
+        pendingDeals,
+        contactRequestsCount
       },
       recentClients,
       recentAgents,
@@ -77,6 +80,45 @@ router.get('/dashboard', isAuthenticated, isAdmin, async (req, res) => {
     console.error('Admin dashboard error:', error);
     req.flash('error_msg', 'Error loading dashboard');
     res.redirect('/');
+  }
+});
+
+// Contact requests management
+router.get('/contact-requests', isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const contactRequests = await ContactRequest.find()
+      .populate('client', 'fullName email phone')
+      .populate('agent', 'fullName email phone')
+      .populate('property', 'title location price')
+      .sort({ createdAt: -1 });
+
+    res.render('admin/contact-requests', {
+      title: 'Contact Requests',
+      contactRequests
+    });
+  } catch (error) {
+    console.error('Contact requests error:', error);
+    req.flash('error_msg', 'Error loading contact requests');
+    res.redirect('/admin/dashboard');
+  }
+});
+
+// Update contact request status
+router.post('/contact-request/:id/status', isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const { status, notes } = req.body;
+    
+    await ContactRequest.findByIdAndUpdate(req.params.id, {
+      status,
+      notes: notes || ''
+    });
+
+    req.flash('success_msg', 'Contact request updated successfully');
+    res.redirect('/admin/contact-requests');
+  } catch (error) {
+    console.error('Update contact request error:', error);
+    req.flash('error_msg', 'Error updating contact request');
+    res.redirect('/admin/contact-requests');
   }
 });
 

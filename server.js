@@ -5,9 +5,22 @@ const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 require('dotenv').config(); // Load .env
 
 const app = express();
+
+// Email configuration
+const transporter = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'your-email@gmail.com',
+    pass: process.env.EMAIL_PASS || 'your-app-password'
+  }
+});
+
+// Make transporter available globally
+app.locals.emailTransporter = transporter;
 
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/homlet';
@@ -50,13 +63,11 @@ app.use((req, res, next) => {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Ensure EJS is properly configured
-// app.locals.include = require('ejs').render;
-
 const User = require('./models/User');
 const Property = require('./models/Property');
 const Deal = require('./models/Deal');
 const Rating = require('./models/Rating');
+const ContactRequest = require('./models/ContactRequest');
 
 async function createDefaultAdmin() {
   try {

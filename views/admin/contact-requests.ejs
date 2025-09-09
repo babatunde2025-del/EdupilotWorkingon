@@ -1,0 +1,90 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #667eea;">📞 Contact Requests</h1>
+        <p style="color: rgba(255, 255, 255, 0.8);">Monitor all client-agent contact requests</p>
+    </div>
+
+    <div class="card">
+        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <h2 style="font-size: 1.5rem; color: #667eea; margin: 0;">All Contact Requests</h2>
+        </div>
+        
+        <% if (contactRequests && contactRequests.length > 0) { %>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Agent</th>
+                            <th>Property</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% contactRequests.forEach(request => { %>
+                            <tr>
+                                <td>
+                                    <div>
+                                        <p style="font-weight: 600; color: #ffffff; margin: 0;"><%= request.client.fullName %></p>
+                                        <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin: 0;"><%= request.client.email %></p>
+                                        <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin: 0;">📞 <%= request.client.phone %></p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <p style="font-weight: 600; color: #ffffff; margin: 0;"><%= request.agent.fullName %></p>
+                                        <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin: 0;"><%= request.agent.email %></p>
+                                        <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin: 0;">📞 <%= request.agent.phone %></p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <p style="font-weight: 600; color: #ffffff; margin: 0;"><%= request.property.title %></p>
+                                        <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin: 0;">📍 <%= request.property.location.area %>, <%= request.property.location.state %></p>
+                                        <p style="font-size: 0.875rem; color: #51cf66; margin: 0;">₦<%= request.property.price.toLocaleString() %></p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; <%= request.status === 'contacted' ? 'background: rgba(81, 207, 102, 0.2); color: #51cf66;' : request.status === 'pending' ? 'background: rgba(255, 212, 59, 0.2); color: #ffd43b;' : 'background: rgba(255, 107, 107, 0.2); color: #ff6b6b;' %>">
+                                        <%= request.status.charAt(0).toUpperCase() + request.status.slice(1) %>
+                                    </span>
+                                </td>
+                                <td style="color: rgba(255, 255, 255, 0.6);">
+                                    <%= new Date(request.createdAt).toLocaleDateString() %><br>
+                                    <small><%= new Date(request.createdAt).toLocaleTimeString() %></small>
+                                </td>
+                                <td>
+                                    <form action="/admin/contact-request/<%= request._id %>/status" method="POST" style="display: inline;">
+                                        <select name="status" onchange="this.form.submit()" class="btn btn-sm btn-secondary">
+                                            <option value="pending" <%= request.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                            <option value="contacted" <%= request.status === 'contacted' ? 'selected' : '' %>>Contacted</option>
+                                            <option value="closed" <%= request.status === 'closed' ? 'selected' : '' %>>Closed</option>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div style="padding: 3rem; text-align: center;">
+                <div style="color: rgba(255, 255, 255, 0.7);">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📞</div>
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">No contact requests found</p>
+                    <p>Contact requests will appear here when clients contact agents</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="/admin/dashboard" class="btn btn-primary btn-lg">← Back to Dashboard</a>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

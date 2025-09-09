@@ -137,26 +137,50 @@
 // Welcome voice message
 document.addEventListener('DOMContentLoaded', function() {
     // Check if this is a new visitor
-    if (!localStorage.getItem('homlet_visited')) {
+    const hasVisited = localStorage.getItem('homlet_visited');
+    
+    if (!hasVisited) {
         setTimeout(() => {
             // Create and play welcome message
-            const welcomeMessage = new SpeechSynthesisUtterance('Welcome to HomLet! Your trusted platform for finding the perfect home.');
+            const welcomeMessage = new SpeechSynthesisUtterance('Welcome to HomLet! Connect with trusted real estate agents and discover your dream property with HomLet.');
             welcomeMessage.rate = 0.8;
             welcomeMessage.pitch = 1;
-            welcomeMessage.volume = 0.7;
+            welcomeMessage.volume = 0.8;
             
             // Use a pleasant voice if available
             const voices = speechSynthesis.getVoices();
-            const femaleVoice = voices.find(voice => voice.name.includes('Female') || voice.name.includes('Samantha') || voice.name.includes('Karen'));
+            const femaleVoice = voices.find(voice => 
+                voice.name.includes('Female') || 
+                voice.name.includes('Samantha') || 
+                voice.name.includes('Karen') ||
+                voice.name.includes('Zira') ||
+                voice.lang.includes('en-US')
+            );
             if (femaleVoice) {
                 welcomeMessage.voice = femaleVoice;
             }
             
-            speechSynthesis.speak(welcomeMessage);
+            // Ensure voices are loaded before speaking
+            if (speechSynthesis.getVoices().length === 0) {
+                speechSynthesis.addEventListener('voiceschanged', () => {
+                    speechSynthesis.speak(welcomeMessage);
+                });
+            } else {
+                speechSynthesis.speak(welcomeMessage);
+            }
             
             // Mark as visited
             localStorage.setItem('homlet_visited', 'true');
-        }, 2000); // Delay to ensure page is fully loaded
+        }, 3000); // Delay to ensure page is fully loaded
+    } else {
+        // For returning visitors, play a shorter welcome
+        setTimeout(() => {
+            const welcomeMessage = new SpeechSynthesisUtterance('Welcome back to HomLet!');
+            welcomeMessage.rate = 0.9;
+            welcomeMessage.pitch = 1.1;
+            welcomeMessage.volume = 0.6;
+            speechSynthesis.speak(welcomeMessage);
+        }, 1500);
     }
 });
 

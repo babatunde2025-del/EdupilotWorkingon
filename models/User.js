@@ -56,12 +56,16 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
-  paymentHistory: [{
-    amount: Number,
-    propertyId: mongoose.Schema.Types.ObjectId,
-    agentId: mongoose.Schema.Types.ObjectId,
-    date: { type: Date, default: Date.now },
-    reference: String
+  contactedAgents: [{
+    agent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    property: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Property'
+    },
+    date: { type: Date, default: Date.now }
   }]
 }, {
   timestamps: true

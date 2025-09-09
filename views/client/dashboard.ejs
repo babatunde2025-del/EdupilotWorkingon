@@ -22,14 +22,14 @@
 
         <div class="stat-card">
             <span class="stat-icon">💰</span>
-            <span class="stat-number">₦<%= (client.paymentHistory.reduce((sum, payment) => sum + payment.amount, 0)).toLocaleString() %></span>
-            <span class="stat-label">Total Spent</span>
+            <span class="stat-number"><%= client.unlockedAgents.length %></span>
+            <span class="stat-label">Contacted Agents</span>
         </div>
 
         <div class="stat-card">
             <span class="stat-icon">📊</span>
-            <span class="stat-number"><%= client.paymentHistory.length %></span>
-            <span class="stat-label">Transactions</span>
+            <span class="stat-number"><%= properties.filter(p => p.status === 'active').length %></span>
+            <span class="stat-label">Active Properties</span>
         </div>
     </div>
 
@@ -37,10 +37,10 @@
     <div class="card mb-4">
         <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: #667eea;">⚡ Quick Actions</h2>
         <div class="grid grid-4">
-            <a href="/client/payments" class="btn btn-primary">💳 Payment History</a>
             <a href="/houses" class="btn btn-success">🔍 Browse All Properties</a>
             <a href="/about" class="btn btn-secondary">ℹ️ About HomLet</a>
             <a href="/contact" class="btn btn-warning">📞 Contact Support</a>
+            <a href="/auth/logout" class="btn btn-danger">🚪 Logout</a>
         </div>
     </div>
 
@@ -176,8 +176,8 @@
                                         <a href="/client/rate/<%= property.agent._id %>" class="btn btn-warning btn-sm" style="margin-top: 0.5rem;">Rate Agent</a>
                                     </div>
                                 <% } else { %>
-                                    <button onclick="unlockAgent('<%= property._id %>')" class="btn btn-success unlock-btn" style="white-space: nowrap;">
-                                        🔓 Unlock Agent<br><small>(₦2,000)</small>
+                                    <button onclick="contactAgent('<%= property.agent._id %>', '<%= property._id %>')" class="btn btn-success contact-btn" style="white-space: nowrap;">
+                                        📞 Contact Agent
                                     </button>
                                 <% } %>
                             </div>
@@ -216,91 +216,163 @@
     <% } %>
 </div>
 
-<!-- Paystack Payment Modal -->
-<div id="paymentModal" class="payment-modal" style="display: none;">
-    <div class="payment-modal-content">
-        <div class="payment-modal-header">
-            <h3>💳 Unlock Agent Contact</h3>
-            <span class="payment-modal-close" onclick="closePaymentModal()">&times;</span>
-        </div>
-        <div class="payment-modal-body">
-            <div class="payment-info">
-                <div class="payment-icon">🔓</div>
-                <h4>Unlock Agent Contact Information</h4>
-                <p>Pay ₦2,000 to get direct access to the agent's phone number</p>
-                <div class="payment-amount">₦2,000</div>
-            </div>
-            <div class="payment-actions">
-                <button id="payNowBtn" class="btn btn-success btn-lg">💳 Pay with Paystack</button>
-                <button onclick="closePaymentModal()" class="btn btn-secondary">Cancel</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
-let currentPropertyId = null;
-
-function unlockAgent(propertyId) {
-    currentPropertyId = propertyId;
-    document.getElementById('paymentModal').style.display = 'flex';
-}
-
-function closePaymentModal() {
-    document.getElementById('paymentModal').style.display = 'none';
-    currentPropertyId = null;
-}
-
-document.getElementById('payNowBtn').addEventListener('click', function() {
-    if (!currentPropertyId) return;
-    
-    const button = this;
+// Contact agent function
+function contactAgent(agentId, propertyId) {
+    // Show loading state
+    const button = event.target;
     const originalText = button.innerHTML;
-    button.innerHTML = '<div class="loading-spinner"></div> Processing...';
+    button.innerHTML = '<span class="loading-spinner"></span> Contacting...';
     button.disabled = true;
     
-    // Initialize Paystack payment
-    const handler = PaystackPop.setup({
-        key: 'pk_test_your_public_key_here', // Replace with your public key
-        email: '<%= user.email %>',
-        amount: 200000, // ₦2,000 in kobo
-        currency: 'NGN',
-        ref: 'unlock_' + Date.now() + '_' + currentPropertyId,
-        callback: function(response) {
-            // Payment successful, verify on server
-            fetch('/payment/verify', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    reference: response.reference,
-                    propertyId: currentPropertyId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    closePaymentModal();
-                    showSuccessNotification('🎉 Payment successful! Agent contact has been unlocked.');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                } else {
-                    showErrorNotification('❌ Payment verification failed. Please contact support.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showErrorNotification('❌ Payment verification failed. Please try again.');
-            })
-            .finally(() => {
-                button.innerHTML = originalText;
-                button.disabled = false;
-            });
+    // Send contact notification to backend
+    fetch('/client/contact-agent', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
         },
-        onClose: function() {
+        body: JSON.stringify({ 
+            agentId: agentId,
+            propertyId: propertyId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessNotification('✅ Contact request sent! The agent has been notified and will reach out to you soon.');
+        } else {
+            showErrorNotification('❌ Error: ' + (data.error || 'Failed to send contact request'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorNotification('❌ Failed to send contact request. Please try again.');
+    })
+    .finally(() => {
+        // Restore button state
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function showSuccessNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification success';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <div class="notification-icon">✅</div>
+            <div class="notification-message">${message}</div>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+function showErrorNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification error';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <div class="notification-icon">❌</div>
+            <div class="notification-message">${message}</div>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+// Smart search with fuzzy matching
+document.querySelectorAll('.smart-search-input').forEach(input => {
+    input.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        const datalist = document.querySelector(`#${this.getAttribute('list')}`);
+        
+        if (datalist) {
+            const options = datalist.querySelectorAll('option');
+            options.forEach(option => {
+                const optionValue = option.value.toLowerCase();
+                if (optionValue.includes(value) || value.includes(optionValue.substring(0, 3))) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        }
+    });
+});
+</script>
+
+<style>
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 400px;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+    background: rgba(81, 207, 102, 0.9);
+    border: 1px solid #51cf66;
+}
+
+.notification.error {
+    background: rgba(255, 107, 107, 0.9);
+    border: 1px solid #ff6b6b;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-icon {
+    font-size: 1.5rem;
+}
+
+.notification-message {
+    color: white;
+    font-weight: 500;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<%- include('../partials/footer') %>
             button.innerHTML = originalText;
             button.disabled = false;
         }

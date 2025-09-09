@@ -106,13 +106,13 @@
                     <% } %>
                 <% } else { %>
                     <div class="contact-status contact-locked">
-                        <p style="font-weight: 600; margin-bottom: 0.5rem;">🔒 Agent Contact Hidden</p>
-                        <p style="margin: 0;">Pay ₦2,000 to unlock agent's phone number</p>
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">⚠️ Important Notice</p>
+                        <p style="margin: 0; color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">Make sure you meet the agent in person and confirm the property before making any payment.</p>
                     </div>
                     
                     <% if (user && user.role === 'client') { %>
-                        <button onclick="unlockAgent('<%= property._id %>')" class="btn btn-success w-full">
-                            🔓 Unlock Agent Contact (₦2,000)
+                        <button onclick="contactAgent('<%= property.agent._id %>', '<%= property._id %>')" class="btn btn-success w-full">
+                            📞 Contact Agent
                         </button>
                     <% } else { %>
                         <a href="/auth/client-register" class="btn btn-primary w-full">
@@ -198,37 +198,35 @@ function fallbackCopyToClipboard(text) {
 }
 
 <% if (user && user.role === 'client' && !hasUnlocked) { %>
-function unlockAgent(propertyId) {
-    if (!confirm('Are you sure you want to unlock this agent\'s contact for ₦2,000?')) {
-        return;
-    }
-    
+function contactAgent(agentId, propertyId) {
     // Show loading state
     const button = event.target;
     const originalText = button.innerHTML;
-    button.innerHTML = '<span class="loading"></span> Processing...';
+    button.innerHTML = '<span class="loading-spinner"></span> Contacting...';
     button.disabled = true;
     
-    fetch('/payment/initialize', {
+    // Send contact notification to backend
+    fetch('/client/contact-agent', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ propertyId: propertyId })
+        body: JSON.stringify({ 
+            agentId: agentId,
+            propertyId: propertyId
+        })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // For demo purposes, simulate successful payment
-            alert('🎉 Payment successful! Agent contact has been unlocked.');
-            window.location.reload();
+            alert('✅ Contact request sent! The agent has been notified and will reach out to you soon.');
         } else {
-            alert('❌ Error: ' + (data.error || 'Payment initialization failed'));
+            alert('❌ Error: ' + (data.error || 'Failed to send contact request'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('❌ Payment initialization failed. Please try again.');
+        alert('❌ Failed to send contact request. Please try again.');
     })
     .finally(() => {
         // Restore button state
@@ -237,6 +235,20 @@ function unlockAgent(propertyId) {
     });
 }
 <% } %>
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
 </script>
 
 <%- include('../partials/footer') %>
